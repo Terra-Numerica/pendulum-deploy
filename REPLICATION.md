@@ -88,7 +88,6 @@ La communication entre le contrôleur et les applications est basée sur le prot
 Ces deux programmes ont des dépendances directes ou indirectes avec les bibliothèques externes
 suivantes :
 
-- `libsodium` : dépendance transitive de `zmq` 
 - `libzmq` : moteur de communication ZeroMQ
 - `zmqpp` : binding C++ de `libzmq`
 - `pigpio` : interactions avec les IOs de la Raspberry
@@ -104,7 +103,7 @@ dépendances sont compilées à partir de leur code source. Cela nécessite plus
 Du fait des inter-dépendances, l'installation doit être faite dans la séquence suivante.
 
 Afin d'isoler les dépendances externes des codes du projet lui-même, leurs codes sources sont
-installés dans une arborescence séparée. Préparez l'environnement comment suit:
+installés dans une arborescence séparée sous `$HOME/deps`. Préparez l'environnement comme suit:
 ```
 cd $HOME
 mkdir deps 
@@ -114,32 +113,7 @@ cd deps
 La section suivante détaillant l'installation de chacune d'entre elles suppose qu'on débute la
 procédure en étant déjà dans le répertoire `$HOME/deps/`.
 
-### libsodium
-
-Télécharger les sources: 
-```
-wget https://github.com/jedisct1/libsodium/archive/refs/heads/master.zip libsodium-master.git
-```
-
-Décompresser l'archive:
-```
-unzip libsodium-master.git
-```
-
-Configurer et lancer la compilation:
-```
-cd libsodium-master
-./configure 
-make && nake check
-```
-Installer la bibliothèque:
-```
-sudo make install
-```
-
-Pour plus de détail : https://doc.libsodium.org/installation
-
-### libzmq
+### ZeroMQ
 
 Télécharger les sources: 
 ```
@@ -158,20 +132,25 @@ mkdir build && cd build
 
 Configurer et lancer la compilation:
 ```
-cmake ..
+cmake -DENABLE_CURVE=OFF -DWITH_LIBSODIUM=OFF ..
 cmake --build .
 ```
+
+**Note:** il n'y a pas besoin d'activer la couche de sécurité et le cryptage pour le type
+d'application concerné ici. Les désactiver permet de plus d'être moins consommateur en CPU
+à l'exécution.
+
 Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépendance requise
 étant bloquante pour la suite de la procédure.
 
 Installer la bibliothèque:
 ```
-sudo cmake install .
+sudo cmake --install .
 ```
 
 Pour plus de détail : https://github.com/zeromq/libzmq
 
-### zmqpp
+### Bindings C++
 
 Télécharger les sources: 
 ```
@@ -201,7 +180,8 @@ Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépe
 
 Installer la bibliothèque:
 ```
-sudo cmake install .
+sudo cmake --install .
+sudo ldconfig
 ```
 
 Pour plus de détail : https://github.com/zeromq/zmqpp
@@ -225,7 +205,7 @@ cmake --build .
 
 Installer la bibliothèque:
 ```
-sudo cmake install .
+sudo cmake --install .
 ```
 
 Pour plus de détail : https://abyz.me.uk/rpi/pigpio/index.html
@@ -250,14 +230,14 @@ cmake --build .
 ```
 Installer la bibliothèque:
 ```
-sudo cmake install .
+sudo cmake --install .
 ```
 
 Pour plus de détail : https://github.com/jbeder/yaml-cpp
 
 ## Exécutables du pendule
 
-Les codes sources du projet sont installés dans une arborescence séparée, préparée comme suit:
+Les codes sources du projet sont installés dans une arborescence séparée, située sous `$HOME/devel`.
 
 ```
 cd $HOME
@@ -287,7 +267,7 @@ mkdir build && cd build
 
 Configurer et lancer la compilation:
 ```
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_DOC=OFF ..
 cmake --build .
 ```
 Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépendance requise
@@ -323,8 +303,8 @@ mkdir build && cd build
 
 Configurer et lancer la compilation:
 ```
-cmake ..
-cmake --build .
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_DOC=OFF ..
+cmake --build . --target low_level_interface --target demo --target reset_gpio
 ```
 Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépendance requise
 étant bloquante pour la suite de la procédure.
