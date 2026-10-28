@@ -47,22 +47,25 @@ surtout si vous avez opté pour un mot de passe pouvant être deviné.
 
 ### Configuration post-boot initial
 
+**TODO:** Retirer la phrase suivante si l'architecture 32/64 n'a pas d'incidence.
+
+L'architecture 32/64 bits du système installé peut être controllée par la commande
+`getconf LONG_BIT`. Elle retourne `32` ou `64` selon l'architecture.
+
 Les opérations à faire sont décrites ici en mode CLI. La raison de ce choix
 est que leur équivalent via l'interface graphique évolue au gré des versions de l'OS 
 alors que les commandes en mode CLI sont stables.
 
 L'outil utilisé est `raspi-config`.
 
-### System options
-
-#### Wireless LAN (S1)
+#### System options / Wireless LAN (S1)
 
 A vous de voir si le WiFi est nécessaire. 
 
 Dans le cas contraire, le désactiver réduit la consommation électrique et par conséquent
 l'échauffement de la carte.
 
-#### Admin Password (S10)
+#### System options / Admin Password (S10)
 
 Il est activé par défaut dans les versions récentes de l'OS Raspberry, à
 l'image de toutes les autes distributions Linux. 
