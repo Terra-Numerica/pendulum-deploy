@@ -88,11 +88,11 @@ La communication entre le contrôleur et les applications est basée sur le prot
 Ces deux programmes ont des dépendances directes ou indirectes avec les bibliothèques externes
 suivantes :
 
-- `pigpio` : interactions avec les IOs de la Raspberry
-- `yaml-cpp` : lecture et écriture des fichiers de configuration au format YAML
+- `libsodium` : dépendance transitive de `zmq` 
 - `libzmq` : moteur de communication ZeroMQ
 - `zmqpp` : binding C++ de `libzmq`
-- `libsodium` : dépendance transitive de `zmq` 
+- `pigpio` : interactions avec les IOs de la Raspberry
+- `yaml-cpp` : lecture et écriture des fichiers de configuration au format YAML
 
 Afin de disposer des versions adaptées à l'environnement matériel et système, toutes ces 
 dépendances sont compilées à partir de leur code source. Cela nécessite plusieurs outils :
@@ -169,6 +169,8 @@ Installer la bibliothèque:
 sudo cmake install .
 ```
 
+Pour plus de détail : https://github.com/zeromq/libzmq
+
 ### zmqpp
 
 Télécharger les sources: 
@@ -201,6 +203,57 @@ Installer la bibliothèque:
 ```
 sudo cmake install .
 ```
+
+Pour plus de détail : https://github.com/zeromq/zmqpp
+
+### pigpio
+
+Télécharger les sources: 
+```
+wget wget https://github.com/joan2937/pigpio/archive/master.zip pigpio-master.zip
+```
+
+Décompresser l'archive:
+```
+unzip pigpio-master.git
+```
+
+Lancer la compilation:
+```
+cmake --build .
+```
+
+Installer la bibliothèque:
+```
+sudo cmake install .
+```
+
+Pour plus de détail : https://abyz.me.uk/rpi/pigpio/index.html
+
+### yaml-cpp
+
+Télécharger les sources: 
+```
+wget https://github.com/jbeder/yaml-cpp/archive/refs/heads/master.zip yaml-cpp-master.git
+```
+
+Décompresser l'archive:
+```
+unzip yaml-cpp-master.git
+```
+
+Configurer et lancer la compilation:
+```
+cd yaml-cpp-master
+cmake ..
+cmake --build .
+```
+Installer la bibliothèque:
+```
+sudo cmake install .
+```
+
+Pour plus de détail : https://github.com/jbeder/yaml-cpp
 
 ## Exécutables du pendule
 
@@ -296,7 +349,7 @@ pendulum_pi/
     ├── config/
     │   ├── demo.yaml
     │   └── pendule_pi_config.yaml
-    └── <binaires stables contrôleur et démo>
+    └── <binaires contrôleur, démo, outils...>
 ```
 
 La branche `stable` sert à archiver les versions des exécutables et des fichiers de configuration
@@ -410,4 +463,3 @@ status : displays the current status of the controller
     
 demo   : starts the demonstration application
 ```
-
