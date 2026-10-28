@@ -1,0 +1,34 @@
+Démonstrateur pendule inversé
+-----------------------------
+
+> Etape 1 : lancement du process système
+
+  Entrez la commande : pendulum start
+
+  Si des messages comme "is moving", "angle is not zero" ou similaire sont affichés, 
+  pas de panique : relancez la commande.
+
+  Attendre la fin de la calibration pour passer à l'étape suivante.
+
+
+> Etape 2 : lancement de la démo
+
+  Entrez la commande : pendulum demo
+  (Ctrl-C termine la démo)
+
+
+> Etape 3 : arrêt du process système
+
+  Aucune raison de le faire en contexte normal, mais en cas de besoin 
+  entrez la commande : pendulum stop
+
+--------------
+TRES IMPORTANT
+--------------
+
+  Ne JAMAIS arrêter la Raspberry par coupure de l'alimentation électrique.  
+  Il y a alors de gros risques de corrompre sa carte SD.
+
+  TOUJOURS utiliser la commande : sudo poweroff
+  (ou l'équivalent dans l'interface graphique)
+
