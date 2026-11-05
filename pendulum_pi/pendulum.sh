@@ -12,7 +12,7 @@ pigpio_is_running() {
 }
 
 
-USAGE="Usage: $COMMAND start|stop|status|demo|help"
+USAGE="Usage: $COMMAND start|stop|status|demo|reset|help"
 
 show_help() {
     cat << EOF
