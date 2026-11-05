@@ -22,8 +22,8 @@ start  : starts the hardware controller and run it in background.
          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
 stop   : stops the controller
 status : displays the current status of the controller
-    
 demo   : starts the demonstration application
+reset  : resets the GPIO pins
 
 EOF
 }
@@ -76,6 +76,18 @@ case "$1" in
             echo "ERROR: Demonstration cannot be started because the hardware controller is not running."
             echo "Use the command '$COMMAND start' to start it."
             exit 1
+        fi
+        ;;
+
+    "reset")
+        if pigpio_is_running ; then
+            echo "ERROR: GPIO pins cannot be reset because the hardware controller is running."
+            echo "Use the command '$COMMAND stop' to stop it."
+            exit 1
+        else
+            echo "Resetting GPIO pins..."
+            sudo $PENDULUM_BIN_DIR/reset_gpio
+            echo "Done."
         fi
         ;;
 
