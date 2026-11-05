@@ -86,8 +86,7 @@ case "$1" in
             exit 1
         else
             echo "Resetting GPIO pins..."
-            sudo $PENDULUM_BIN_DIR/reset_gpio
-            echo "Done."
+            sudo $PENDULUM_BIN_DIR/reset_gpio && echo "Done." || echo "ERROR: GPIO pins reset failed (rc=$?)."
         fi
         ;;
 
