@@ -6,9 +6,10 @@ PENDULUM_BIN_DIR=$PENDULUM_RUNTIME_BASE
 PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
 
 COMMAND=pendulum
+PID_FILE=/var/run/pigpio.pid
 
 pigpio_is_running() {
-    test -f /var/run/pigpio.pid 
+    test -f $PID_FILE && ps -p $(cat $PID_FILE) > /dev/null 2>&1
 }
 
 
@@ -35,22 +36,30 @@ case "$1" in
             exit 0
         fi
 
-        echo ""
-        echo "The hardware controller is starting in background..."
-        echo ""
-        echo "Wait for the '--- Pendulum ready ---' message before starting the demo"
-        echo "with command : $COMMAND demo"
-        echo ""
-        echo "In case of initialisation error, just launch the command again."
-        echo ""
+        echo "
+        The low level controller is starting in background...
+
+        Wait for the '--- Pendulum ready ---' message before starting the demo.
+
+        In case of initialisation error, just launch the command again,
+        after waiting for the pendulum to be still if this was the failure cause.
+        "
+        
         sudo $PENDULUM_BIN_DIR/low_level_interface $PENDULUM_CFG_DIR/pendule_pi_config.yaml &
         ;;
 
     "stop")
         if pigpio_is_running ; then
-            pid=$(cat /var/run/pigpio.pid)
-            echo "Stopping the hardware controller (pid=$pid)..."
+            pid=$(cat $PID_FILE)
+            echo "Stopping the low level controller (pid=$pid)..."
             sudo kill $pid
+
+            # Wait for the process to terminate
+            while pigpio_is_running ; do
+                sleep 0.1
+            done
+            echo "Stop completed."
+
         else
             echo "not running"
         fi
