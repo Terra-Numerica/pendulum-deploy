@@ -70,7 +70,7 @@ case "$1" in
             echo ""
             echo "Demo terminated."
             echo ""
-            echo "Use '$COMMAND stop' to stop the low level interface if needed."
+            echo "Use '$COMMAND stop' to stop the low level interface when done."
             echo ""
         else
             echo "ERROR: Demonstration cannot be started because the hardware controller is not running."
