@@ -1,71 +1,164 @@
-# Réplication du démonstrateur "Pendule Inversé"
+---
+title: |
+  Démonstrateur "Pendule Inversé" \
+  Réplication de l'environnement logiciel
+author: Eric PASCUAL (Terra Numerica)
+date: \today
+papersize: a4
+geometry: margin=2.5cm
+toc-depth: 2
+toc-title: Sommaire
+include-before:
+  - '`\newpage`{=latex}'       
+  - '`\tableofcontents`{=latex}'
+  - '`\newpage`{=latex}'
+lang: fr-FR
+mainfont: DejaVu Sans
+monofont: DejaVu Sans Mono
+header-includes: |
+  \usepackage{fvextra}
+  \usepackage{xcolor}
+  \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+    frame=single,
+    rulecolor=\color{gray!50},
+    framesep=2mm,
+    fontsize=\small
+  }
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \fancyhead[LO,RE]{Démonstrateur "Pendule Inversé"}
 
-## Environnement
+abstract: |
+    Ce document détaille les opérations à effectuer pour répliquer la partie logicielle
+    du démonstrateur du pendule inversé.
 
-Rasppberry Pi 4 modèle B 1Gb.
+    Ces opérations concernent la création et la configuration du système d'exploitation,
+    l'installation des dépendances externes et enfin elles des logiciels spécifiques.
+    
+    L'installation aussi bien des dépendances externes que des logiciels spécifiques
+    se faisant à partir de leur code source et non en utilisant des paquets pré-compilés,
+    leur mise en \oe;uvre suppose une connaissance du système Linux mais aussi une 
+    expérience préalable des outils et procédures de développement logiciel.
 
-OS avec desktop (pour affichage des vidéos et documents support pendant l'animation)
+    Il a par ailleurs été rédigé en se basant sur l'utilisation d'un environnement Linux 
+    comme station de travail. Il appartient à l'utilisateur de faire ses propres recherches
+    pour trouver les modes opératoires appropriés à son système d'exploitable s'il était
+    autre.
+---
 
-## Procédure
+# Environnement système
 
-### Création de la carte SD
+## Création de la carte SD
 
 Utiliser l'outil **Raspberry Pi Imager** pour créer la carte SD. 16Gb sont suffisants.
 
-#### Sélection de la version 
+### Sélection de la version 
 
-- La version utilisée en date de rédaction est `Trixie`.
-- Raspberry Pi OS (32 bits)
+La version servant de base à la configuration actuelle est **Raspbian Buster**.
 
-**TODO:** valider si le 32/64 bits est réellement la source des problèmes rencontrés.
+Cette version n'est pas du tout la dernière en date, mais est celle qui fonctionne
+actuellement sur les démonstrateurs en service. 
 
-#### Configuration de l'image
+Même si un tel choix peut sembler contraire aux principes de sécurité, le contexte particulier
+d'un système embarqué et non connecté permet de déroger aux bonnes pratiques. 
 
-(via le bouton **EDIT SETIINGS**)
+N'étant pas proposée par défaut par Imager, il faut donc la télécharger
+depuis la section archive du site Raspberry et la sélectionner ensuite via 
+l'option "Custom image".
 
-##### hostname
+Choisir la version avec environnement graphique, mais sans les applications recommandées.
 
-Eviter de laisser le hostname par défaut si vous utilisez des Raspberry 
-sur différents démonstrateur. Utilisez à la place un pattern comme `rpi-pendulum-<n>`,
+### Configuration de l'image avant flash
+
+(via le bouton **EDIT SETTINGS**)
+
+#### hostname
+
+Évitez de laisser le hostname par défaut si vous utilisez des Raspberry 
+sur différents démonstrateurs. Utilisez à la place un pattern comme `rpi-pendulum-<n>`,
 `n` représentant un identificateur numérique ou autre vous permettant de différencier
 plusieurs exemplaires du système.
 
-##### username et password
+#### username et password
 
-Même si cela est maintenant signalé par l'outil comme *unsafe* utilisez le
-username historique `pi`. Cela simplifier ala maintenance par des tiers. Pour
-ce qui est du password, à vous de le gérer pour que là encore ne pas
+Même si cela est maintenant signalé par l'outil comme *unsafe*, utilisez le
+username historique `pi`. Cela simplifiera la maintenance par des tiers. Pour
+ce qui est du password, à vous de le gérer pour là encore ne pas
 transformer une intervention de maintenance en escape game.
 
-##### ssh
+#### ssh
 
-Activez-le car il est plus confortable de travailler depuis votre machine habituelle
+Activez-le, car il est plus confortable de travailler depuis votre machine habituelle
 que de devoir connecter un écran, un clavier et une souris à la Raspberry. 
 
 Il est conseillé de choisir l'option *public-key authentication only*, 
 surtout si vous avez opté pour un mot de passe pouvant être deviné.
 
-### Configuration post-boot initial
+### Patch de l'image
 
-**TODO:** Retirer la phrase suivante si l'architecture 32/64 n'a pas d'incidence.
+La version Buster étant ancienne, elle ne démarre pas sur les RPi 4 récentes. Il faut donc
+la patcher en récupérant les fichiers récents depuis une image récente.
 
-L'architecture 32/64 bits du système installé peut être controllée par la commande
-`getconf LONG_BIT`. Elle retourne `32` ou `64` selon l'architecture.
+La procédure ci-après est basée sur l'utilisation d'un système Linux.
 
-Les opérations à faire sont décrites ici en mode CLI. La raison de ce choix
-est que leur équivalent via l'interface graphique évolue au gré des versions de l'OS 
+#### Préparation
+
+- monter la carte SD
+- télécharger l'image ISO de la version actuelle (Trixie en date de rédaction)
+- la décompresser puis la monter localement pour avoir accès aux filesystems `rootfs` 
+et `bootfs`
+
+### Mise à jour des fichiers de boot et du firmware  
+
+Copier les fichiers et répertoires suivants depuis la partition `bootfs` de l'image récente 
+vers celle de la carte SD :
+
+```
+cp /path/to/modern/iso/bootfs/start*.elf /path/to/buster/bootfs/
+cp /path/to/modern/iso/bootfs/fixup*.dat /path/to/buster/bootfs/
+```
+
+### Mise à jour du layout tree et du kernel
+
+Le hardware des ports USB et Ethernet étant différents entre les deux versions de carte,
+ceux-ci ne fonctionnent pas directement. Il faut mettre à jour aussi le *device tree* :
+
+```
+cp /path/to/modern/iso/bootfs/*.dtb /path/to/buster/bootfs/
+cp -r /path/to/modern/iso/bootfs//overlays/ /path/to/buster/bootfs/
+```
+
+Idem pour le kernel :
+
+```
+cp /path/to/modern/iso/bootfs/kernel*.img /path/to/buster/bootfs/
+```
+
+Ainsi que les kernel modules (**Attention:** ça se passe dans le `rootfs` cette fois-ci) :
+
+```
+cp -r /path/to/modern/iso/rootfs/lib/modules/* /path/to/buster/rootfs/
+```
+
+Une fois ces patchs effectués, faire un `unmount` des partitions `rootfs` et `bootfs` 
+de la carte SD et démarrez la Raspberry avec.
+
+## Configuration post-boot initial
+
+Les opérations à faire sont décrites ici en mode CLI. Ce choix est motivé par le fait
+que leur équivalent via l'interface graphique évolue au gré des versions de l'OS 
 alors que les commandes en mode CLI sont stables.
 
 L'outil utilisé est `raspi-config`.
 
-#### System options / Wireless LAN (S1)
+### System options / Wireless LAN (S1)
 
 A vous de voir si le WiFi est nécessaire. 
 
 Dans le cas contraire, le désactiver réduit la consommation électrique et par conséquent
 l'échauffement de la carte.
 
-#### System options / Admin Password (S10)
+### System options / Admin Password (S10)
 
 Il est activé par défaut dans les versions récentes de l'OS Raspberry, à
 l'image de toutes les autes distributions Linux. 
@@ -76,9 +169,9 @@ l'animateur à chaque fois peut poser un problème s'il ne le connaît pas. Par
 conséquent, désactivez-le dans ce contexte précis, le système n'étant pas de
 nature critique et n'étant pas supposé accéder à des ressources critiques. 
 
-**A ne surtout pas reproduire** par défaut sur vos autres installation.
+**A ne surtout pas reproduire** par défaut sur vos autres installations.
 
-## Installation des dépendances
+# Installation des dépendances
 
 La couche logicielle du démonstrateur est composée de deux programmes :
 
@@ -99,47 +192,98 @@ suivantes :
 Afin de disposer des versions adaptées à l'environnement matériel et système, toutes ces 
 dépendances sont compilées à partir de leur code source. Cela nécessite plusieurs outils :
 
-- `gcc` : normalement déja présent dans la distribution Rasppberry
+- `gcc` : normalement déja présent dans la distribution Raspberry
 - `make` : déjà présent également
-- `CMake` : à installer via la commande `sudo apt install cmake`
 
 Du fait des inter-dépendances, l'installation doit être faite dans la séquence suivante.
 
 Afin d'isoler les dépendances externes des codes du projet lui-même, leurs codes sources sont
-installés dans une arborescence séparée sous `$HOME/deps`. Préparez l'environnement comme suit:
+installés dans une arborescence séparée sous `$HOME/deps`. Préparez l'environnement comme
+suit :
+
 ```
 cd $HOME
 mkdir deps 
 cd deps
 ```
 
-La section suivante détaillant l'installation de chacune d'entre elles suppose qu'on débute la
-procédure en étant déjà dans le répertoire `$HOME/deps/`.
+La section suivante détaillant l'installation de chacune d'entre elles suppose qu'on commence
+la procédure en étant déjà dans le répertoire `$HOME/deps/`.
 
-### ZeroMQ
+## CMake
 
-Télécharger les sources: 
+La version de CMake présente dans le repository apt de Buster est la 3.16.3. Elle est trop
+ancienne pour certains outils de développement
+remote. Nous allons donc installer CMake en le compilant depuis les sources, mais en restant
+sur la version utilisée pour les exemplaires précédents du démonstrateur (3.19.4) par
+sécurité.  
+
+**Ne pas tenter de passer à la version 4.x** de CMake tant que l'OS reste en version Buster.
+
+**IMPORTANT**
+
+La dépendance `libssl-dev` doit être installée au préalable :
+
 ```
-wget https://github.com/zeromq/libzmq/archive/refs/heads/master.zip libzmq-master.zip
+sudo apt install libssl-dev 
+```
+
+Faute de quoi le step `bootstrap` de la compilation de CMake échouera. 
+
+Récupérer et compiler les sources ensuite :
+
+```
+cd $HOME/deps
+wget https://cmake.org/files/v3.19/cmake-3.19.4.tar.gz
+tar xzvf cmake-3.19.4.tar.gz
+cd cmake-3.19.4
+./bootstrap
+make -j 4
+sudo make install
+sudo ldconfig
+```
+
+Comme conseillé dans les documentations, rebooter avant de poursuivre.
+
+Vérifier la version après redémarrage :
+
+```
+cmake --version
+cmake version 3.19.4
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+```
+## ZeroMQ
+
+Télécharger les sources : 
+
+```
+cd $HOME/deps
+wget \
+    https://github.com/zeromq/libzmq/archive/refs/heads/master.zip \
+    -O libzmq-master.zip
 ```
 
 Décompresser l'archive:
+
 ```
 unzip libzmq-master.git
 ```
-Préparer l'environnement de compilation:
+Préparer l'environnement de compilation :
+
 ```
 cd libzmq-master
 mkdir build && cd build
 ```
 
-Configurer et lancer la compilation:
+Configurer et lancer la compilation :
+
 ```
 cmake -DENABLE_CURVE=OFF -DWITH_LIBSODIUM=OFF ..
 cmake --build .
 ```
 
-**Note:** il n'y a pas besoin d'activer la couche de sécurité et le cryptage pour le type
+**Note :** il n'y a pas besoin d'activer la couche de sécurité et le cryptage pour le type
 d'application concerné ici. Les désactiver permet de plus d'être moins consommateur en CPU
 à l'exécution.
 
@@ -147,33 +291,41 @@ Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépe
 étant bloquante pour la suite de la procédure.
 
 Installer la bibliothèque:
+
 ```
 sudo cmake --install .
 ```
 
 Pour plus de détail : https://github.com/zeromq/libzmq
 
-### Bindings C++
+## Bindings C++
 
-Télécharger les sources: 
+Télécharger les sources : 
+
 ```
-wget https://github.com/zeromq/zmqpp/archive/refs/heads/develop.zip zmqpp-master.zip
+cd $HOME/deps
+wget \
+    https://github.com/zeromq/zmqpp/archive/refs/heads/develop.zip \
+    -O zmqpp-master.zip
 ```
 
 **Note:** la branche `develop` du projet est utilisé car `master` semble accuser un retard
 de mise à jour important en date de rédaction de ce document.
 
-Décompresser l'archive:
+Décompresser l'archive :
+
 ```
 unzip zmqpp-develop.git
 ```
-Préparer l'environnement de compilation:
+Préparer l'environnement de compilation :
+
 ```
 cd zmqpp-develop
 mkdir build && cd build
 ```
 
-Configurer et lancer la compilation:
+Configurer et lancer la compilation :
+
 ```
 cmake ..
 cmake --build .
@@ -182,6 +334,7 @@ Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépe
 étant bloquante pour la suite de la procédure.
 
 Installer la bibliothèque:
+
 ```
 sudo cmake --install .
 sudo ldconfig
@@ -189,11 +342,15 @@ sudo ldconfig
 
 Pour plus de détail : https://github.com/zeromq/zmqpp
 
-### pigpio
+## pigpio
 
-Télécharger les sources: 
+Télécharger les sources : 
+
 ```
-wget wget https://github.com/joan2937/pigpio/archive/master.zip pigpio-master.zip
+cd $HOME/deps
+wget \
+    https://github.com/joan2937/pigpio/archive/master.zip \
+    -O pigpio-master.zip
 ```
 
 Décompresser l'archive:
@@ -201,112 +358,137 @@ Décompresser l'archive:
 unzip pigpio-master.git
 ```
 
-Lancer la compilation:
+Préparer l'environnement de compilation :
+
 ```
+cd pigpio-master
+mkdir build && cd build
+```
+
+Lancer la compilation:
+
+```
+cmake ..
 cmake --build .
 ```
 
 Installer la bibliothèque:
+
 ```
 sudo cmake --install .
 ```
 
 Pour plus de détail : https://abyz.me.uk/rpi/pigpio/index.html
 
-### yaml-cpp
+## yaml-cpp
 
-Télécharger les sources: 
+Télécharger les sources : 
+
 ```
-wget https://github.com/jbeder/yaml-cpp/archive/refs/heads/master.zip yaml-cpp-master.git
+cd ~/deps
+wget \
+    https://github.com/jbeder/yaml-cpp/archive/refs/heads/master.zip \
+    -O yaml-cpp-master.git
 ```
 
 Décompresser l'archive:
+
 ```
 unzip yaml-cpp-master.git
 ```
 
-Configurer et lancer la compilation:
+Préparer l'environnement de compilation :
+
 ```
 cd yaml-cpp-master
+mkdir build && cd build
+```
+
+Configurer et lancer la compilation :
+
+```
 cmake ..
 cmake --build .
 ```
+
 Installer la bibliothèque:
+
 ```
 sudo cmake --install .
 ```
 
 Pour plus de détail : https://github.com/jbeder/yaml-cpp
 
-## Exécutables du pendule
+# Exécutables du pendule
 
 Les codes sources du projet sont installés dans une arborescence séparée, située sous `$HOME/devel`.
 
 ```
 cd $HOME
 mkdir devel
-cd devel
 ```
 
-### `digital_filters`
+## Evolutions par rapport au projet original 
 
-Cette bibliothèque interne a été initialement créée par F. Fusco dans le cadre du développement
-du démonstrateur. Elle est utilisée par le code de contrôle du pendule.
+### Merge de digital_filters
 
-Télécharger les sources: 
-```
-wget https://github.com/Terra-Numerica/pendulum-digital_filters/archive/refs/heads/main.zip digital_filters-main.zip
-```
+Le projet original de F. Fusco inclut une dépendance interne
+(`digital_filters`) qui fournit une bibliothèque de filtres numériques.
 
-Décompresser l'archive:
-```
-unzip digital_filters-main.zip
-```
-Préparer l'environnement de compilation:
-```
-cd digital_filters-main
-mkdir build && cd build
-```
+Si conserver cette bibliothèque sous forme d'artefact séparé avait du sens
+pendant le projet initiale, elle n'est utilisée que par le code *low level*
+du contrôleur du pendule. Afin de simplifier la gestion du projet, les sources
+correspondants ont été directement inclus dans le projet `pendulum-core`.
 
-Configurer et lancer la compilation:
-```
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_DOC=OFF ..
-cmake --build .
-```
-Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépendance requise
-étant bloquante pour la suite de la procédure.
+### Génération de la documentation interne
 
-Installer la bibliothèque:
-```
-sudo cmake install .
-```
+La documentation interne des classes modélisant le pendule et ses divers accessoires
+(moteur, bouton,...) présente un intérêt dans le cadre d'un packaging de ces derniers dans
+une bibliothèque indépendante, vouée à être utilisée par d'autres projets.
 
-### `pendulum_pi`
+Ce scénario ne présente plus d'intérêt suffisant dans le contexte de la réplication du
+démonstrateur pour justifier la complexité additionnelle dela production d'une documentation
+technique au standard des pratiques. 
+
+La documentation interne des sources eux-mêmes aurait de plus demandé à être très largement
+complétée, pour ne pas dire rédigée.
+
+Cette target du CMakeList initial a donc été supprimée et la dépendance à Doxygen a été retirée.
+
+## `pendulum-core`
 
 Version pour Raspberry Pi du code de contrôle et de démonstration du pendule inversé.
-Le projet produit plusieurs exécutables:
+Le projet produit plusieurs exécutables :
 
 - `low_level_interface` : le contrôleur bas niveau du dispositif matériel
 - `demo` : la démonstration interactive
 
-Télécharger les sources: 
+Télécharger les sources : 
+
 ```
-wget https://github.com/Terra-Numerica/pendulum-core/archive/refs/heads/main.zip pendulum_core-main.zip
+cd $HOME/devel
+wget \
+    https://github.com/Terra-Numerica/pendulum-core/archive/refs/heads/main.zip \
+    -O pendulum_core-main.zip
 ```
 
 Décompresser l'archive:
+
 ```
 unzip pendulum_core-main.zip
 ```
-Préparer l'environnement de compilation:
+
+Préparer l'environnement de compilation :
+
 ```
 cd pendulum_core-main
 mkdir build && cd build
 ```
 
-Configurer et lancer la compilation:
+Configurer et lancer la compilation des binaires exécutables :
+
 ```
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_DOC=OFF ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . --target low_level_interface --target demo --target reset_gpio
 ```
 Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépendance requise
@@ -315,7 +497,7 @@ Vérifier que la commande `cmake` ne produit pas d'erreur, l'absence d'une dépe
 Il n'y a pas de phase d'installation ici, les exécutables produits dans `build` étant directement
 utilisés.
 
-## Mise en place de l'espace de déploiement
+# Environnent runtime
 
 Afin de sécuriser les versions stables des exécutables et des fichiers de configuration tout
 en permettant d'effectuer des modifications expérimentales, une arborescence de fichiers dédiée
@@ -343,9 +525,9 @@ produits dans `build/`
 - `demo`
 - `reset_gpio` *(outil pour réinitialiser les I/Os en cas de problème)*
 
-Cette copie permet de figer leur version, indépendemment des modifications locales et compilations
+Cette copie permet de figer leur version, indépendamment des modifications locales et compilations
 faites dans le projet. Le contenu de `stable/config/` suit la même logique, sauvegardant les
-fichiers de configuration validés pour la prodcution.
+fichiers de configuration validés pour la production.
 
 Les fichiers homologues sous `dev/` sont des liens symboliques sur les artefacts produits dans `build/`
 et les fichiers de configuration de travail. Ceci permet d'avoir en permanence la toute dernière 
@@ -357,26 +539,31 @@ La bascule entre les configurations `dev` est `stable` se fait en modifiant le l
 `active` à la racine de l'arborescence. Le script `pendulum.sh` utilise le path `$HOME/pendulum_pi/active`
 pour accéder aux différents fichiers lors du lancement des exécutables. Ce script est copié 
 depuis le projet `pendulum-core` lors du déploiement initial et à chaque mise à jour. On peut
-aussi définir un lien symbolique vers l'orginal au lieu d'en faire la copie, ce script étant 
+aussi définir un lien symbolique vers l'original au lieu d'en faire la copie, ce script étant 
 assez stable.
+
+## Mise en place
 
 Exécutez les commandes suivantes pour la mise en place de cette structure :
 
 ```
 cd $HOME
-wget https://github.com/Terra-Numerica/pendulum-deploy/archive/refs/heads/main.zip pendulum-deploy-main.zip
+wget \
+    https://github.com/Terra-Numerica/pendulum-deploy/archive/refs/heads/main.zip \
+    -O pendulum-deploy-main.zip
 unzip pendulum-deploy-main.zip .
 ```
 
-**Important:** Attention à ne pas omettre le point en fin de commande unzip pour ne pas créer un
-sous-repertoire. Vérifiez bien que la structure a été créée directement à la racine du home dir.
+**Important :** Attention à ne pas omettre le point en fin de commande unzip pour ne pas créer un
+sous repertoire. Vérifiez bien que la structure a été créée directement à la racine du home dir.
 
-## Initialisation de l'espace de déploiement
+## Initialisation des contenus
 
 Après avoir généré les exécutables, copier les binaires dans la branche `stable/`:
 
 ```
-copy devel/pendulum-core/build/{low_level_interface,demo,reset_gpio} pendulum_pi/stable
+copy devel/pendulum-core/build/{low_level_interface,demo,reset_gpio} \
+    pendulum_pi/stable
 ```
 
 Activez enfin l'accès à la version stable en créant le lien symbolique :
@@ -391,27 +578,47 @@ En fin de procédure, l'arborescence doit avoir ce contenu :
 pendulum_pi/
 ├── active -> stable
 ├── dev/
-│   └── config/
+│  └── config/
 ├── pendulum.sh
 └── stable/
     ├── config/
-    │   ├── demo.yaml
-    │   └── pendule_pi_config.yaml
+    │   ├── demo.yaml
+    │   └── pendule_pi_config.yaml
     ├── demo
     ├── low_level_interface
     └── reset_gpio
 ```
 
+# Finalisation
+
+Il s'agit ici d'ajouter quelques configurations permettant de rendre l'utilisation du
+démonstrateur la plus simple et intuitive possible.
+
 ## Commande end-user
 
 Pour simplifier l'utilisation de script end-user, ajouter un lien symbolique dans le chemin
-de recherche par défaut du shell:
+de recherche par défaut du shell :
 
 ```
-ln -s pendulum_pi/pendulum.sh .local.bin/pendulum
+cd $HOME
+mkdir -p .local/bin
+ln -s ~/pendulum_pi/pendulum.sh .local/bin/pendulum
 ```
 
 La commande `pendulum` sera ainsi accessible de n'importe où.
+
+Pour en simplifier l'usage, créer le fichier `pendulum` (même nom que la 
+commande) dans le répertoire de configuration des complétions bash :
+
+```
+mkdir -p ~/.local/share/bash-completion/completions
+echo 'complete -W "start stop reset demo status help" pendulum' \
+    >> .local/share/bash-completion/completions/pendulum
+```
+
+La touche <kbd>Tab</kbd> après la commande `pendulum` affichera alors les sous-commandes disponibles. 
+
+**Note :** il faut relancer la session bash pour que la configuration soit active.
 
 ## Affichage par défaut de la notice 
 
@@ -424,12 +631,12 @@ clear && cat NOTICE.txt
 
 ## La commande `pendulum`
 
-Elle permet de gérer simplement les actions suivantes:
+Elle permet de gérer simplement les actions suivantes :
 - démarrage du contrôleur de bas niveau
 - lancement de la démo 
 - arrêt du contrôleur
 
-Elle dispose d'une aide en ligne:
+Elle dispose d'une aide en ligne :
 
 ```
 $ pendulum

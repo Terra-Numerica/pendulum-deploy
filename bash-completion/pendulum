@@ -1,0 +1,2 @@
+# copy this file to $HOME/.local/share/bash-completion/completions/ to have tab completion for the pendulum command
+complete -W "start stop reset demo status help" pendulum

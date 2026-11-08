@@ -8,6 +8,13 @@ PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
 COMMAND=pendulum
 PID_FILE=/var/run/pigpio.pid
 
+if [ ! -e $PENDULUM_RUNTIME_BASE ] ; then
+  echo "ERROR: the active symbolic link pointing to the runtime configuration is not defined."
+  echo ""
+  echo "Refer to content of $HOME/pendulum_pi/NOTICE for detail. "
+  exit 1
+fi
+
 pigpio_is_running() {
     test -f $PID_FILE && ps -p $(cat $PID_FILE) > /dev/null 2>&1
 }
@@ -75,6 +82,7 @@ case "$1" in
 
     "demo")
         if pigpio_is_running ; then
+            clear
             $PENDULUM_BIN_DIR/demo $PENDULUM_CFG_DIR/demo.yaml
             echo ""
             echo "Demo terminated."

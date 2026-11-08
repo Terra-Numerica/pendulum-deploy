@@ -1,0 +1,5 @@
+You can put in this directory the dev version of binaries of low_level_interface,
+demo and reset_gpio for testing local developments.
+
+They can either be copied from the build area of be symbolic links from there
+(which avoid having to redo the copies when recompiling).

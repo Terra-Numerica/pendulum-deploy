@@ -1,0 +1,11 @@
+After having creating this file tree, create a symbolic to the version you
+want to be the active one :
+
+ln -s stable active
+
+- or -
+
+ln -s dev active
+
+The "active" symbolic link must exist for the "pendulum" command to work since it is
+used there to refer to where the executable and configuration files reside.
