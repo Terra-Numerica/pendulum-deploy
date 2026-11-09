@@ -7,6 +7,11 @@ left_switch:
   # If true, then the internal pull-up or pull-down resistor is activated.
   use_internal_pull_resistor: true
 
+# Signals wiring
+
+# The port configured hereafter are the ones used by the custom HAT
+# providing secured connectors.
+
 # Configuration of the right switch (motor side).
 right_switch:
   # GPIO pin used to read the state of the switch.
@@ -27,8 +32,8 @@ position_encoder:
 # the pivot for the rod).
 angle_encoder:
   # Pins corresponding to the two phases of the encoder.
-  pin_a: 19
-  pin_b: 26
+  pin_a: 26
+  pin_b: 19
 
 # Configuration of the motor.
 motor:
@@ -37,11 +42,9 @@ motor:
   # Pin used to invert the rotation direction of the motor.
   direction_pin: 16
 
-# Conversion coefficents for the encoders.
+# Conversion coefficients for the encoders.
 meters_per_step: 1.6656494260794234e-05  # 0.846/50791
-#meters_per_step: 9.992676761711276e-06  # 0.846/84653
 radians_per_step: 0.002617993877991494  # 2*M_PI/2400
-#radians_per_step: 0.0015707963267948967  # 2*M_PI/4000
 
 # By default, the pendulum should read zero when in the downward position and PI
 # when pointing upward. However, you might prefer a different convention, or
