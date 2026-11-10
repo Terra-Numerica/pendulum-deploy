@@ -61,7 +61,8 @@ case "$1" in
             echo "Stopping the low level controller (pid=$pid)..."
             sudo kill $pid
 
-            # Wait for the process to terminate
+            # Wait for the process to terminate and check is current status
+            sleep 0.5
             while pigpio_is_running ; do
                 sleep 0.1
             done
