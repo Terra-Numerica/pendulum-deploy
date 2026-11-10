@@ -1,6 +1,8 @@
 #!/bin/bash
 
-PENDULUM_RUNTIME_BASE=$HOME/pendulum_pi/active
+PENDULUM_PI_BASE=$HOME/pendulum_pi
+
+PENDULUM_RUNTIME_BASE=$PENDULUM_PI_BASE/active
 
 PENDULUM_BIN_DIR=$PENDULUM_RUNTIME_BASE
 PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
@@ -8,10 +10,10 @@ PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
 COMMAND=pendulum
 PID_FILE=/var/run/pigpio.pid
 
-if [ ! -e $PENDULUM_RUNTIME_BASE ] ; then
+if [ ! -L $PENDULUM_RUNTIME_BASE ] ; then
   echo "ERROR: the active symbolic link pointing to the runtime configuration is not defined."
   echo ""
-  echo "Refer to content of $HOME/pendulum_pi/NOTICE for detail. "
+  echo "Refer to content of $PENDULUM_PI_BASE/NOTICE for detail. "
   exit 1
 fi
 
@@ -34,6 +36,22 @@ demo   : starts the demonstration application
 reset  : resets the GPIO pins
 
 EOF
+}
+
+show_current_profile() {
+  echo "Current profile : $(readlink $PENDULUM_RUNTIME_BASE)"
+}
+
+switch_profile() {
+  if [ -n "$1" ] ; then
+    if [ -L $PENDULUM_RUNTIME_BASE ] ; then
+        rm $PENDULUM_RUNTIME_BASE
+    fi
+    (cd $PENDULUM_PI_BASE && ln -s $1 active)
+    show_current_profile
+  else
+    echo "ERROR: missing profile name"
+  fi
 }
 
 case "$1" in
@@ -74,11 +92,11 @@ case "$1" in
         ;;
 
     "status")
-	if pigpio_is_running; then
-	    echo "running"
-	else
-	    echo "stopped"
-	fi
+        if pigpio_is_running; then
+            echo "running"
+        else
+            echo "stopped"
+        fi
         ;;
 
     "demo")
@@ -111,6 +129,14 @@ case "$1" in
     "help"|"-h"|"--help")
         show_help
         ;;
+
+    "profile")
+        show_current_profile
+        ;;
+
+    "dev"|"stable")
+       switch_profile $1
+       ;;
 
     *)
         echo "Invalid command."
