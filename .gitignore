@@ -3,3 +3,5 @@ demo
 low_level_interface
 reset_gpio
 /replication.pdf
+*.tgz
+*.zip
