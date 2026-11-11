@@ -18,6 +18,10 @@ monofont: DejaVu Sans Mono
 header-includes: |
   \usepackage{fvextra}
   \usepackage{xcolor}
+  \usepackage{float}
+  \makeatletter
+  \def\fps@figure{H}
+  \makeatother
   \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
     frame=single,
     rulecolor=\color{gray!50},
@@ -569,22 +573,35 @@ permanence la dernière version.
 
 ## Mise en place
 
-Exécutez les commandes suivantes pour la mise en place de cette structure :
+Exécutez les commandes suivantes pour la mise en place de cette structure.
+
+**Attention :** contrairement aux cas précédents, nous utilisons ici le format `tar` et non `zip`
+pour l'export du projet, car nous allons avoir besoin d'effectuer une extraction sur mesure
+que ne permet pas `unzip`.
 
 ```
 cd $HOME
 wget \
-    https://github.com/Terra-Numerica/pendulum-deploy/archive/refs/heads/main.zip \
-    -O pendulum-deploy-main.zip
-unzip pendulum-deploy-main.zip .
+    https://github.com/Terra-Numerica/pendulum-deploy/archive/refs/heads/main.tar.gz \
+    -O pendulum-deploy-main.tgz
+tar -xf pendulum-deploy-main.tgz \
+    --strip-components=1 \
+    pendulum-deploy-main/pendulum_pi
 ```
 
-**Important :** Attention à ne pas omettre le point en fin de commande unzip pour ne pas créer un
-sous repertoire. Vérifiez bien que la structure a été créée directement à la racine du home dir.
+**Notes concernant les paramètres de tar :** 
 
-## Initialisation des contenus
+- `--strip-components=1` : supprime le premier niveau de répertoire (la racine du repo Git) au moment 
+de l'extraction des fichiers et répertoires afin de ne pas créer un niveau d'imbrication excédentaire
+- `pendulum-deploy-main/pendulum_pi` : n'extrait que le sous-répertoire qui nous intéresse
+et pas l'intégralité du contenu du repo
+ 
+Vérifiez bien que la structure a été créée directement à la racine du *home dir*.
 
-Après avoir généré les exécutables, copier les binaires dans la branche `stable/` :
+## Ajout des contenus complémentaires
+
+Après avoir généré les exécutables comme détaillé au chapître [`pendulum-core`](#pendulum-core), 
+copiez-les dans la branche `stable/` :
 
 ```
 copy devel/pendulum-core/build/{low_level_interface,demo,reset_gpio} \
@@ -596,6 +613,9 @@ Activez enfin l'accès à la version stable en créant le lien symbolique :
 ```
 ln -s pendulum_pi/stable pendulum_pi/active
 ```
+
+**Note :** consulter le paragraphe ["Fonctionnalités internes"](#fonctionnalités-internes) de la documentation
+de la commande `pendulum` par une option plus conviviale pour réaliser la même opération.
 
 En fin de procédure, l'arborescence doit avoir ce contenu :
 
@@ -619,9 +639,19 @@ pendulum_pi/
 Il s'agit ici d'ajouter quelques configurations permettant de rendre l'utilisation du
 démonstrateur la plus simple et intuitive possible.
 
-## Commande end-user
+## La commande `pendulum`
 
-Pour simplifier l'utilisation de script end-user, ajouter un lien symbolique dans le chemin
+Elle permet de gérer simplement les actions suivantes :
+
+- démarrage du contrôleur de bas niveau
+- lancement de la démo
+- arrêt du contrôleur
+
+Elle est implémentée par le script `pendulum.sh`, contenu dans l'arborescence `$HOME/pendulum_pi`.
+
+### Installation de l'accès simplifié
+
+Pour ne pas avoir à saisir le path complet du script, ajouter un lien symbolique dans le chemin 
 de recherche par défaut du shell :
 
 ```
@@ -632,7 +662,9 @@ ln -s ~/pendulum_pi/pendulum.sh .local/bin/pendulum
 
 La commande `pendulum` sera ainsi accessible de n'importe où.
 
-Pour en simplifier l'usage, créer le fichier `pendulum` (même nom que la 
+### Complétion automatique
+
+Pour simplifier de la commande, créer le fichier `pendulum` (même nom que la 
 commande) dans le répertoire de configuration des complétions bash :
 
 ```
@@ -645,24 +677,9 @@ La touche <kbd>Tab</kbd> après la commande `pendulum` affichera alors les sous-
 
 **Note :** il faut relancer la session bash pour que ces modifications soient effectives.
 
-## Affichage par défaut de la notice 
+### Aide en ligne
 
-Afin de fournir aux animateurs les instructions de base directement à l'ouverture du terminal, 
-ajouter la ligne suivante à la fin du fichier `$HOME/.bashrc`:
-
-```
-clear && cat NOTICE.txt
-```
-
-## La commande `pendulum`
-
-Elle permet de gérer simplement les actions suivantes :
-
-- démarrage du contrôleur de bas niveau
-- lancement de la démo 
-- arrêt du contrôleur
-
-Elle dispose d'une aide en ligne :
+La commande dispose d'une aide en ligne :
 
 ```
 $ pendulum
@@ -678,4 +695,31 @@ stop   : stops the controller
 status : displays the current status of the controller
     
 demo   : starts the demonstration application
+```
+
+### Fonctionnalités internes
+
+La commande `pendulum` dispose de commandes supplémentaires non documentées publiquement,
+car destinées à un usage interne dans le contexte du développement.
+
+- `pendulum stable` : configure le profil actif pour utiliser les exécutables et configurations
+de l'arborescence `stable/`
+- `pendulum dev` : configure le profil actif pour exécuter la version développement, généralement
+configurée dans l'arborescence `dev/` par des liens symboliques vers les artefacts produits par 
+les build CMake
+- `pendulum profile` : affiche le profil actif
+
+### Exemples d'exécution
+
+![low_level_interface](img/low_level_interface.png){width=80%}
+
+![demo](img/demo.png){width=80%}
+
+## Affichage par défaut de la notice d'utilisation 
+
+Afin de fournir aux animateurs les instructions de base directement à l'ouverture du terminal, 
+ajouter la ligne suivante à la fin du fichier `$HOME/.bashrc`:
+
+```
+clear && cat NOTICE.txt
 ```

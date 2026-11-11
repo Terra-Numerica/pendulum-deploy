@@ -1,7 +1,7 @@
 .ONESHELL:
 
 .PHONY:
-pdf: replication.pdf
+build: replication.pdf
 
 replication.pdf: REPLICATION.md
 	pandoc $< \
@@ -17,3 +17,6 @@ deploy:
   		exit 1 ; \
   	fi
 	rsync -aiv pendulum_pi $$TARGET:
+
+clean:
+	rm -f replication.pdf
