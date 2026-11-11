@@ -711,9 +711,9 @@ les build CMake
 
 ### Exemples d'exécution
 
-![low_level_interface](img/low_level_interface.png){width=80%}
+![low_level_interface](img/low_level_interface.png)
 
-![demo](img/demo.png){width=80%}
+![demo](img/demo.png)
 
 ## Affichage par défaut de la notice d'utilisation 
 
