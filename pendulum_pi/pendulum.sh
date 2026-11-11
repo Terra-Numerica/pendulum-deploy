@@ -103,12 +103,12 @@ case "$1" in
         if pigpio_is_running ; then
             clear
             $PENDULUM_BIN_DIR/demo $PENDULUM_CFG_DIR/demo.yaml
+
             echo ""
-            echo "Demo terminated."
-            echo ""
-            echo "Use '$COMMAND stop' to stop the low level interface when done."
+            echo "Demo terminated. Use '$COMMAND stop' to stop the low level interface when done."
             echo ""
         else
+            echo ""
             echo "ERROR: Demonstration cannot be started because the hardware controller is not running."
             echo "Use the command '$COMMAND start' to start it."
             exit 1

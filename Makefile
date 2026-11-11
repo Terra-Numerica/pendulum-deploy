@@ -10,13 +10,13 @@ replication.pdf: REPLICATION.md
 		--no-highlight \
 		-s
 
+clean:
+	rm -f replication.pdf
+
 .PHONY:
 deploy:
 	@if [ -z "$$TARGET" ] ;then \
   		echo "ERROR: TARGET must be defined" ;\
   		exit 1 ; \
   	fi
-	rsync -aiv pendulum_pi $$TARGET:
-
-clean:
-	rm -f replication.pdf
+	rsync -aiv --exclude demo --exclude low_level_interface --exclude reset_gpio pendulum_pi $$TARGET:
