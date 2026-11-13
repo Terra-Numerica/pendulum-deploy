@@ -486,11 +486,18 @@ Les fichiers sources correspondant ont également été retirés du projet.
 
 Version pour Raspberry Pi du code de contrôle et de démonstration du pendule inversé.
 
-Le projet produit plusieurs exécutables :
+Le projet produit les exécutables principaux utilisés lors des animations :
 
 - `low_level_interface` : le contrôleur bas niveau du dispositif matériel
 - `demo` : la démonstration interactive
-- `reset_gpio` : utilitaire de reset des GPIO de la Raspberry, en cas de nécessité
+
+Il génère aussi plusieurs outils de vérification et maintenance de la configuration matérielle :
+
+- `check_encoders` : vérifie le fonctionnement des encodeurs et leur configuration 
+  concernant le sens de rotation
+- `check_motor` : vérifie le fonctionnement du moteur et son sens de câblage
+- `check_limit_switches` : vérifie le fonctionnement des capteurs de fin de course
+- `reset_gpio` : réinitialise à leur état par défault les GPIOs utilisées par l'application
 
 Téléchargez les sources : 
 
@@ -604,7 +611,7 @@ Après avoir généré les exécutables comme détaillé au chapître [`pendulum
 copiez-les dans la branche `stable/` :
 
 ```
-copy devel/pendulum-core/build/{low_level_interface,demo,reset_gpio} \
+copy devel/pendulum-core/build/{low_level_interface,demo,reset_gpio,check_*} \
     pendulum_pi/stable
 ```
 
@@ -629,6 +636,9 @@ pendulum_pi/
     ├── config/
     │   ├── demo.yaml
     │   └── pendule_pi_config.yaml
+    ├── check_encoders
+    ├── check_limit_switches    
+    ├── check_motor    
     ├── demo
     ├── low_level_interface
     └── reset_gpio
@@ -669,7 +679,7 @@ commande) dans le répertoire de configuration des complétions bash :
 
 ```
 mkdir -p ~/.local/share/bash-completion/completions
-echo 'complete -W "start stop reset demo status help" pendulum' \
+echo 'complete -W "start stop reset demo status check help" pendulum' \
     >> .local/share/bash-completion/completions/pendulum
 ```
 
@@ -682,19 +692,20 @@ La touche <kbd>Tab</kbd> après la commande `pendulum` affichera alors les sous-
 La commande dispose d'une aide en ligne :
 
 ```
-$ pendulum
-Invalid command.
-Usage: pendulum start|stop|status|demo|help
+$ pendulum 
+ERROR: pendulum used with a wrong or missing sub-command.
+Usage: pendulum start|stop|status|demo|reset|check|help
 
 $ pendulum help
-Usage: pendulum start|stop|status|demo|help
+Usage: pendulum start|stop|status|demo|reset|check|help
 
 start  : starts the hardware controller and run it in background. 
          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
 stop   : stops the controller
 status : displays the current status of the controller
-    
 demo   : starts the demonstration application
+reset  : resets the GPIO pins
+check  : runs various checks on the hardware
 ```
 
 ### Fonctionnalités internes
