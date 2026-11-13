@@ -10,7 +10,10 @@ PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
 PENDULUM_CFG_FILE=$PENDULUM_CFG_DIR/pendule_pi_config.yaml
 
 COMMAND=pendulum
+
 PID_FILE=/var/run/pigpio.pid
+STATUS_FILE=/var/run/pendulum.status
+
 
 if [ ! -L $PENDULUM_RUNTIME_BASE ] ; then
   echo "ERROR: the active symbolic link pointing to the runtime configuration is not defined."
@@ -63,16 +66,21 @@ case "$1" in
             exit 0
         fi
 
-        echo "
-        The low level controller is starting in background...
+        sudo rm -f $STATUS_FILE
 
-        Wait for the '--- Pendulum ready ---' message before starting the demo.
-
-        In case of initialisation error, just launch the command again,
-        after waiting for the pendulum to be still if this was the failure cause.
-        "
-        
         sudo $PENDULUM_BIN_DIR/low_level_interface "$PENDULUM_CFG_FILE" &
+
+        until [ -e $STATUS_FILE ] ; do
+          sleep 1
+        done
+
+        status=$(<$STATUS_FILE)
+        if [[ "$status" == "1" ]] ; then
+          echo -e "You can now start the demo by entering : \033[0;97m$COMMAND demo\033[0m\n"
+        else
+          echo -e "\n\033[0;93mPendulum is not ready.\033[0m\n"
+          echo -e "Fix the cause reported by the controller and try again.\n"
+        fi
         ;;
 
     "stop")
@@ -86,7 +94,7 @@ case "$1" in
             while pigpio_is_running ; do
                 sleep 0.1
             done
-            echo "Stop completed."
+            echo -e "\rController stopped."
 
         else
             echo "not running"
