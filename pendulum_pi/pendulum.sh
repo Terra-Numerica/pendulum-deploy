@@ -7,6 +7,8 @@ PENDULUM_RUNTIME_BASE=$PENDULUM_PI_BASE/active
 PENDULUM_BIN_DIR=$PENDULUM_RUNTIME_BASE
 PENDULUM_CFG_DIR=$PENDULUM_RUNTIME_BASE/config
 
+PENDULUM_CFG_FILE=$PENDULUM_CFG_DIR/pendule_pi_config.yaml
+
 COMMAND=pendulum
 PID_FILE=/var/run/pigpio.pid
 
@@ -22,7 +24,7 @@ pigpio_is_running() {
 }
 
 
-USAGE="Usage: $COMMAND start|stop|status|demo|reset|help"
+USAGE="Usage: $COMMAND start|stop|status|demo|reset|check|help"
 
 show_help() {
     cat << EOF
@@ -34,6 +36,7 @@ stop   : stops the controller
 status : displays the current status of the controller
 demo   : starts the demonstration application
 reset  : resets the GPIO pins
+check  : runs various checks on the hardware
 
 EOF
 }
@@ -48,7 +51,6 @@ switch_profile() {
         rm $PENDULUM_RUNTIME_BASE
     fi
     (cd $PENDULUM_PI_BASE && ln -s $1 active)
-    show_current_profile
   else
     echo "ERROR: missing profile name"
   fi
@@ -70,7 +72,7 @@ case "$1" in
         after waiting for the pendulum to be still if this was the failure cause.
         "
         
-        sudo $PENDULUM_BIN_DIR/low_level_interface $PENDULUM_CFG_DIR/pendule_pi_config.yaml &
+        sudo $PENDULUM_BIN_DIR/low_level_interface "$PENDULUM_CFG_FILE" &
         ;;
 
     "stop")
@@ -126,20 +128,48 @@ case "$1" in
         fi
         ;;
 
+    "check")
+        case "$2" in
+          "motor"|"m")
+            sudo $PENDULUM_BIN_DIR/check_motor "$PENDULUM_CFG_FILE"
+            ;;
+          "encoders"|"e")
+            sudo $PENDULUM_BIN_DIR/check_encoders "$PENDULUM_CFG_FILE"
+            ;;
+          "switches"|"s")
+            sudo $PENDULUM_BIN_DIR/check_limit_switches "$PENDULUM_CFG_FILE"
+            ;;
+          "")
+            echo "Usage: $COMMAND $1 motor|encoders|switches"
+            ;;
+          *)
+            echo "ERROR: invalid check name"
+            echo "Usage: $COMMAND $1 motor|encoders|switches"
+        esac
+        ;;
+
     "help"|"-h"|"--help")
         show_help
         ;;
 
+# Internal use for development
     "profile")
-        show_current_profile
+        case "$2" in
+          "dev"|"stable")
+            switch_profile $2
+            show_current_profile
+            ;;
+          "")
+            show_current_profile
+            ;;
+          *)
+            echo "ERROR: invalid profile name (valid: dev|stable)"
+            ;;
+        esac
         ;;
 
-    "dev"|"stable")
-       switch_profile $1
-       ;;
-
     *)
-        echo "Invalid command."
+        echo "ERROR: $COMMAND used with a wrong or missing sub-command."
         echo $USAGE
         exit 2
         ;;
