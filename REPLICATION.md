@@ -651,11 +651,13 @@ démonstrateur la plus simple et intuitive possible.
 
 ## La commande `pendulum`
 
-Elle permet de gérer simplement les actions suivantes :
+Elle encapsule l'invocation des différents exécutables fournissant :
 
-- démarrage du contrôleur de bas niveau
-- lancement de la démo
-- arrêt du contrôleur
+- les actions courantes pour l'utilisation du démonstrateur en animation :
+  - démarrage du contrôleur de bas niveau
+  - lancement de la démo
+  - arrêt du contrôleur
+- les outils de checking du matériel et de sa configuration présentés au chapitre [pendulum-core](`pendulum-core`).
 
 Elle est implémentée par le script `pendulum.sh`, contenu dans l'arborescence `$HOME/pendulum_pi`.
 
@@ -713,9 +715,9 @@ check  : runs various checks on the hardware
 La commande `pendulum` dispose de commandes supplémentaires non documentées publiquement,
 car destinées à un usage interne dans le contexte du développement.
 
-- `pendulum stable` : configure le profil actif pour utiliser les exécutables et configurations
+- `pendulum profile stable` : configure le profil actif pour utiliser les exécutables et configurations
 de l'arborescence `stable/`
-- `pendulum dev` : configure le profil actif pour exécuter la version développement, généralement
+- `pendulum profile dev` : configure le profil actif pour exécuter la version développement, généralement
 configurée dans l'arborescence `dev/` par des liens symboliques vers les artefacts produits par 
 les build CMake
 - `pendulum profile` : affiche le profil actif
@@ -723,6 +725,10 @@ les build CMake
 ### Exemples d'exécution
 
 ![low_level_interface](img/low_level_interface.png)
+
+![low_level_interface (échec démarrage)](img/low_level_interface-fail.png)
+
+![arrêt low_level_interface](img/low_level_interface-stop.png)
 
 ![demo](img/demo.png)
 
