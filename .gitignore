@@ -5,3 +5,5 @@ reset_gpio
 /replication.pdf
 *.tgz
 *.zip
+*.pdf
+*.mp4
