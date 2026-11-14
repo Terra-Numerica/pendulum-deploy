@@ -176,6 +176,18 @@ case "$1" in
         esac
         ;;
 
+    "update_stable")
+        if [ -e "$HOME/clion_stage/pendulum-core/build/low_level_interface" ] ; then
+          find $HOME/clion_stage/pendulum-core/build/ \
+              -maxdepth 1 \
+              -type f \
+              -executable \
+              -exec cp -av {} $HOME/pendulum_pi/stable/ \;
+        else
+          echo "ERROR: no staging build available"
+        fi
+        ;;
+
     *)
         echo "ERROR: $COMMAND used with a wrong or missing sub-command."
         echo $USAGE
