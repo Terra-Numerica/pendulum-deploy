@@ -15,7 +15,7 @@ PID_FILE=/var/run/pigpio.pid
 STATUS_FILE=/var/run/pendulum.status
 
 ANSI_GREEN="\033[0;92m"
-ANSI_RED="\033[0;93m"
+ANSI_RED="\033[0;91m"
 ANSI_BRIGHT="\033[0;97m"
 ANSI_RESET="\033[0m"
 
@@ -94,8 +94,7 @@ case "$1" in
         if [[ "$status" == "1" ]] ; then
           echo -e "You can now start the demo by entering : ${ANSI_BRIGHT}$COMMAND demo${ANSI_RESET}\n"
         else
-          print_err "Pendulum is not ready."
-          echo -e "Fix the cause reported by the controller and try again.\n"
+          echo -e "Fix the cause reported above and try again.\n"
         fi
         ;;
 
