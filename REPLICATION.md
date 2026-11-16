@@ -696,18 +696,19 @@ La commande dispose d'une aide en ligne :
 ```
 $ pendulum 
 ERROR: pendulum used with a wrong or missing sub-command.
-Usage: pendulum start|stop|status|demo|reset|check|help
+Usage: pendulum start|stop|status|demo|reset|check|version|help
 
 $ pendulum help
-Usage: pendulum start|stop|status|demo|reset|check|help
+Usage: pendulum start|stop|status|demo|reset|check|version|help
 
-start  : starts the hardware controller and run it in background. 
-         *** MUST BE DONE BEFORE RUNNING THE DEMO ***
-stop   : stops the controller
-status : displays the current status of the controller
-demo   : starts the demonstration application
-reset  : resets the GPIO pins
-check  : runs various checks on the hardware
+start   : starts the hardware controller and run it in background.
+          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
+stop    : stops the controller
+status  : displays the current status of the controller
+demo    : starts the demonstration application
+reset   : resets the GPIO pins
+check   : runs various checks on the hardware
+version : displays the version of the executables
 ```
 
 ### Fonctionnalités internes
