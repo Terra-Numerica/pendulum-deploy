@@ -14,6 +14,11 @@ COMMAND=pendulum
 PID_FILE=/var/run/pigpio.pid
 STATUS_FILE=/var/run/pendulum.status
 
+ANSI_GREEN="\033[0;92m"
+ANSI_RED="\033[0;93m"
+ANSI_BRIGHT="\033[0;97m"
+ANSI_RESET="\033[0m"
+
 
 if [ ! -L $PENDULUM_RUNTIME_BASE ] ; then
   echo "ERROR: the active symbolic link pointing to the runtime configuration is not defined."
@@ -26,20 +31,25 @@ pigpio_is_running() {
     test -f $PID_FILE && ps -p $(cat $PID_FILE) > /dev/null 2>&1
 }
 
+print_err() {
+  echo -e "${ANSI_RED}ERROR: ${*}${ANSI_RESET}\n"
+}
 
-USAGE="Usage: $COMMAND start|stop|status|demo|reset|check|help"
+
+USAGE="Usage: $COMMAND start|stop|status|demo|reset|check|version|help"
 
 show_help() {
     cat << EOF
 $USAGE
 
-start  : starts the hardware controller and run it in background. 
-         *** MUST BE DONE BEFORE RUNNING THE DEMO ***
-stop   : stops the controller
-status : displays the current status of the controller
-demo   : starts the demonstration application
-reset  : resets the GPIO pins
-check  : runs various checks on the hardware
+start   : starts the hardware controller and run it in background.
+          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
+stop    : stops the controller
+status  : displays the current status of the controller
+demo    : starts the demonstration application
+reset   : resets the GPIO pins
+check   : runs various checks on the hardware
+version : displays the version of the executables
 
 EOF
 }
@@ -55,14 +65,20 @@ switch_profile() {
     fi
     (cd $PENDULUM_PI_BASE && ln -s $1 active)
   else
-    echo "ERROR: missing profile name"
+    print_err "missing profile name."
   fi
 }
 
 case "$1" in
+    "version")
+        echo "Versions :"
+        echo "- low level controller : " $($PENDULUM_BIN_DIR/low_level_interface --version)
+        echo "- demo application     : " $($PENDULUM_BIN_DIR/demo --version)
+        ;;
+
     "start")
         if pigpio_is_running ; then
-            echo "Already started."
+            print_err "Already started."
             exit 0
         fi
 
@@ -76,9 +92,9 @@ case "$1" in
 
         status=$(<$STATUS_FILE)
         if [[ "$status" == "1" ]] ; then
-          echo -e "You can now start the demo by entering : \033[0;97m$COMMAND demo\033[0m\n"
+          echo -e "You can now start the demo by entering : ${ANSI_BRIGHT}$COMMAND demo${ANSI_RESET}\n"
         else
-          echo -e "\n\033[0;93mPendulum is not ready.\033[0m\n"
+          print_err "Pendulum is not ready."
           echo -e "Fix the cause reported by the controller and try again.\n"
         fi
         ;;
@@ -97,7 +113,7 @@ case "$1" in
             echo -e "\rController stopped."
 
         else
-            echo "not running"
+            print_err "not running."
         fi
         ;;
 
@@ -112,27 +128,29 @@ case "$1" in
     "demo")
         if pigpio_is_running ; then
             clear
-            $PENDULUM_BIN_DIR/demo $PENDULUM_CFG_DIR/demo.yaml
-
-            echo ""
-            echo "Demo terminated. Use '$COMMAND stop' to stop the low level interface when done."
-            echo ""
+            shift
+            if $PENDULUM_BIN_DIR/demo $PENDULUM_CFG_DIR/demo.yaml "$@" ; then
+                echo ""
+                echo -e "${ANSI_GREEN}Demo terminated.${ANSI_RESET}\n"
+                echo -e "Use ${ANSI_BRIGHT}'$COMMAND stop'${ANSI_RESET} to stop the low level controller when done."
+                echo ""
+           fi
         else
             echo ""
-            echo "ERROR: Demonstration cannot be started because the hardware controller is not running."
-            echo "Use the command '$COMMAND start' to start it."
+            print_err "Demonstration cannot be started because the hardware controller is not running."
+            echo -e "Use the command ${ANSI_BRIGHT}'$COMMAND start'${ANSI_RESET} to start it."
             exit 1
         fi
         ;;
 
     "reset")
         if pigpio_is_running ; then
-            echo "ERROR: GPIO pins cannot be reset because the hardware controller is running."
-            echo "Use the command '$COMMAND stop' to stop it."
+            print_err "GPIO pins cannot be reset because the hardware controller is running."
+            echo -e "Use the command ${ANSI_BRIGHT}'$COMMAND stop'${ANSI_RESET} to stop it."
             exit 1
         else
             echo "Resetting GPIO pins..."
-            sudo $PENDULUM_BIN_DIR/reset_gpio && echo "Done." || echo "ERROR: GPIO pins reset failed (rc=$?)."
+            sudo $PENDULUM_BIN_DIR/reset_gpio && echo "Done." || print_err "GPIO pins reset failed (rc=$?)."
         fi
         ;;
 
@@ -151,7 +169,7 @@ case "$1" in
             echo "Usage: $COMMAND $1 motor|encoders|switches"
             ;;
           *)
-            echo "ERROR: invalid check name"
+            print_err "invalid check name."
             echo "Usage: $COMMAND $1 motor|encoders|switches"
         esac
         ;;
@@ -171,7 +189,7 @@ case "$1" in
             show_current_profile
             ;;
           *)
-            echo "ERROR: invalid profile name (valid: dev|stable)"
+            print_err "invalid profile name (valid: dev|stable)."
             ;;
         esac
         ;;
@@ -184,12 +202,12 @@ case "$1" in
               -executable \
               -exec cp -av {} $HOME/pendulum_pi/stable/ \;
         else
-          echo "ERROR: no staging build available"
+          print_err "no staging build available."
         fi
         ;;
 
     *)
-        echo "ERROR: $COMMAND used with a wrong or missing sub-command."
+        print_err "$COMMAND used with a wrong or missing sub-command."
         echo $USAGE
         exit 2
         ;;
