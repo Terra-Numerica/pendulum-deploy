@@ -280,7 +280,7 @@ CMake suite maintained and supported by Kitware (kitware.com/cmake).
 
 ## ZeroMQ
 
-Téléchargez les sources : 
+Téléchargez les sources (version *latest* en date de rédaction : 4.3.5) : 
 
 ```
 cd $HOME/deps
@@ -325,7 +325,7 @@ Pour plus de détail : https://github.com/zeromq/libzmq
 
 ## Bindings C++ pour ZeroMQ
 
-Téléchargez les sources : 
+Téléchargez les sources (version *latest* en date de rédaction : 4.2.0) : 
 
 ```
 cd $HOME/deps
@@ -370,7 +370,7 @@ Pour plus de détail : https://github.com/zeromq/zmqpp
 
 ## pigpio
 
-Téléchargez les sources : 
+Téléchargez les sources (version *latest* en date de rédaction : v79 - patch release) : 
 
 ```
 cd $HOME/deps
@@ -408,7 +408,7 @@ Pour plus de détail : https://abyz.me.uk/rpi/pigpio/index.html
 
 ## yaml-cpp
 
-Téléchargez les sources : 
+Téléchargez les sources (version *latest* en date de rédaction : 0.9.0) : 
 
 ```
 cd ~/deps
