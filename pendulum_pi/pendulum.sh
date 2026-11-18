@@ -42,20 +42,20 @@ show_help() {
     cat << EOF
 $USAGE
 
-start   : starts the hardware controller and run it in background.
-          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
-stop    : stops the controller
-status  : displays the current status of the controller
-demo    : starts the demonstration application
-reset   : resets the GPIO pins
-check   : runs various checks on the hardware
-version : displays the version of the executables
-
+start    : starts the hardware controller and run it in background.
+           *** MUST BE DONE BEFORE RUNNING THE DEMO ***
+stop     : stops the controller
+status   : displays the current status of the controller
+demo     : starts the demonstration application
+reset    : resets the GPIO pins
+check    : runs various checks on the hardware
+version  : displays the version of the executables
+deployed : lists the version currently deployed
 EOF
 }
 
 show_current_profile() {
-  echo "Current profile : $(readlink $PENDULUM_RUNTIME_BASE)"
+  echo -e "Current profile : $ANSI_BRIGHT$(readlink $PENDULUM_RUNTIME_BASE)"$ANSI_RESET
 }
 
 switch_profile() {
@@ -71,9 +71,24 @@ switch_profile() {
 
 case "$1" in
     "version")
-        echo "Versions :"
+        show_current_profile
+        echo -e $ANSI_BRIGHT"Versions :"$ANSI_RESET
         echo "- low level controller : " $($PENDULUM_BIN_DIR/low_level_interface --version)
         echo "- demo application     : " $($PENDULUM_BIN_DIR/demo --version)
+        ;;
+
+    "deployed")
+        echo -e $ANSI_BRIGHT"Stable profile :"$ANSI_RESET
+        echo "- low level controller : " $($PENDULUM_PI_BASE/stable/low_level_interface --version)
+        echo "- demo application     : " $($PENDULUM_PI_BASE/stable/demo --version)
+        echo ""
+        echo -e $ANSI_BRIGHT"Dev profile :"$ANSI_RESET
+        if [ -e $PENDULUM_PI_BASE/dev/low_level_interface ] ; then
+          echo "- low level controller : " $($PENDULUM_PI_BASE/dev/low_level_interface --version)
+          echo "- demo application     : " $($PENDULUM_PI_BASE/dev/demo --version)
+        else
+          echo "-- no dev version currently present --"
+        fi
         ;;
 
     "start")

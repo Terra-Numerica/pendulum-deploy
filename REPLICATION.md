@@ -701,14 +701,15 @@ Usage: pendulum start|stop|status|demo|reset|check|version|help
 $ pendulum help
 Usage: pendulum start|stop|status|demo|reset|check|version|help
 
-start   : starts the hardware controller and run it in background.
-          *** MUST BE DONE BEFORE RUNNING THE DEMO ***
-stop    : stops the controller
-status  : displays the current status of the controller
-demo    : starts the demonstration application
-reset   : resets the GPIO pins
-check   : runs various checks on the hardware
-version : displays the version of the executables
+start    : starts the hardware controller and run it in background.
+           *** MUST BE DONE BEFORE RUNNING THE DEMO ***
+stop     : stops the controller
+status   : displays the current status of the controller
+demo     : starts the demonstration application
+reset    : resets the GPIO pins
+check    : runs various checks on the hardware
+version  : displays the version of the executables
+deployed : lists the version currently deployed
 ```
 
 ### Fonctionnalités internes
